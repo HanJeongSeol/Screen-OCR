@@ -1,7 +1,6 @@
 import numpy as np
 import time
 from tkinter import *
-
 def setSize(event):
     time.sleep(0.001)
 
@@ -22,6 +21,7 @@ def setSize(event):
 
     time.sleep(0.01)
 
+
 root = Tk()
 root.title("캡처영역")
 root.attributes('-alpha',0.8)
@@ -29,6 +29,8 @@ root.attributes('-topmost',1)
 root.geometry("430x420+800+400")
 
 root.bind("<Configure>" ,setSize)
+root.bind("<Key>", inputKey)
+
 setSize(None)
 
 root.mainloop()
