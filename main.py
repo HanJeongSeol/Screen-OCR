@@ -1,5 +1,7 @@
 import numpy as np
 import time
+from PIL import ImageGrab
+import cv2
 from tkinter import *
 
 def setSize(event):
@@ -21,6 +23,14 @@ def setSize(event):
     root.title(head)
 
     time.sleep(0.01)
+
+def capture(root, roi=[]) : 
+    root.attribute('-alpha',0.0)
+    img = ImageGrab.grab(roi)
+    frame = np.array(roi)
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+
 
 root = Tk()
 root.title("캡처영역")
