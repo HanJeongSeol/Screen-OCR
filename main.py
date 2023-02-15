@@ -1,8 +1,13 @@
-import numpy as np
 import time
-from PIL import ImageGrab
-import cv2
+import threading
+import func as Func
+import keyboard
+import util as Util
 from tkinter import *
+import tkinter.font
+
+
+
 def setSize(event):
     time.sleep(0.001)
 
@@ -23,21 +28,15 @@ def setSize(event):
 
     time.sleep(0.01)
 
-def capture(root, roi=[]) : 
-    root.attributes('-alpha',0.0)
-    root.update()
-    img = ImageGrab.grab(roi)
-    frame = np.array(img)
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    localTime = time.localtime()
-    nowTime = "%04d-%02d-%02d" % (localTime.tm_year, localTime.tm_mon, localTime.tm_mday)
-    cv2.imwrite("image/talk_%s.png" % nowTime,frame)
-    root.attributes('-alpha',0.8)
-    return
 
 def inputKey(event):
-    if(event.char) == '1' : 
-        capture(root,coordinate)
+    global coordinate
+    
+    if keyboard.is_pressed(Util.KEY_START): 
+        threading.Thread(target=Func.capture(root,coordinate), daemon=True).start()
+
+    if keyboard.is_pressed(Util.WIDGET_DESTROY):
+        threading.Thread(target=Func.destroy(root), daemon=True).start()
 
 root = Tk()
 root.title("캡처영역")
@@ -45,9 +44,20 @@ root.attributes('-alpha',0.8)
 root.attributes('-topmost',1)
 root.geometry("430x420+800+400")
 
+
 root.bind("<Configure>" ,setSize)
 root.bind("<Key>", inputKey)
+
+font=tkinter.font.Font(size=20, weight ='bold', underline=True)
+Msg = Label(root, text="1. 캡쳐시작 : %s" % Util.KEY_START, font=font)
+Msg.pack(padx = 5, pady = 20)
+Msg = Label(root, text="2. 캡쳐종료 : %s" % Util.KEY_STOP,  font=font)
+Msg.pack(padx = 5, pady = 20)
+Msg = Label(root, text="3. 프로그램 종료 : %s" % Util.WIDGET_DESTROY, font=font)
+Msg.pack(padx = 5, pady = 20)
 
 setSize(None)
 
 root.mainloop()
+
+
