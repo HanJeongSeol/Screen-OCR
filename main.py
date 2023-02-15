@@ -2,7 +2,7 @@ import time
 import threading
 import func as Func
 import keyboard
-import util as Util
+import config.util as Util
 from tkinter import *
 import tkinter.font
 
