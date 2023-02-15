@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 import keyboard
 from PIL import ImageGrab
-import util as Util
+import config.util as Util
 
 global cnt
 cnt = 0
