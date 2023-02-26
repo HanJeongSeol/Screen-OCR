@@ -1,7 +1,5 @@
 import time
 import threading
-import keyboard
-import config.util as Util
 from tkinter import *
 import tkinter.font
 from pororo import Pororo
@@ -61,11 +59,6 @@ class Capture(PororoOcr) :
             endPoint=time.time()
             print("시간 : " , endPoint - startPoint)
             key = cv2.waitKey(1)
-            if keyboard.is_pressed(Util.KEY_STOP):
-                root.attributes('-alpha', 0.8)
-                break
-        
-        return
 
     def destroy(root) :
         root.destroy()
@@ -92,17 +85,6 @@ def setSize(event):
     time.sleep(0.01)
 
 
-def inputKey(event):
-    global coordinate
-    
-    if keyboard.is_pressed(Util.KEY_START): 
-        threading.Thread(target=Capture.capture(root,coordinate), daemon=True).start()
-
-    if keyboard.is_pressed(Util.WIDGET_DESTROY):
-        threading.Thread(target=Capture.destroy(root), daemon=True).start()
-
-
-
 root = Tk()
 root.title("캡처영역")
 root.attributes('-alpha',0.8)
@@ -111,22 +93,10 @@ root.geometry("430x420+800+400")
 
 
 root.bind("<Configure>" ,setSize)
-root.bind("<Key>", inputKey)
 
 font=tkinter.font.Font(size=20, weight ='bold', underline=True)
-Msg = Label(root, text="1. 캡쳐시작 : %s" % Util.KEY_START, font=font)
-Msg.pack(padx = 5, pady = 20)
-Msg = Label(root, text="2. 캡쳐종료 : %s" % Util.KEY_STOP,  font=font)
-Msg.pack(padx = 5, pady = 20)
-Msg = Label(root, text="3. 프로그램 종료 : %s" % Util.WIDGET_DESTROY, font=font)
-Msg.pack(padx = 5, pady = 20)
 
 setSize(None)
 
 root.mainloop()
 
-
-
-# 비동기처리로 캡쳐한 사진의 텍스트 추출이 완료되어야만 다음 작업 수행하도록 변경
-# 다음 작업 -> 어떻게 모듈화할지, 현재 클래스로 나뉘어져있고
-# 모듈화를 수행했을 때 비동기 작업 처리 형식 고민
