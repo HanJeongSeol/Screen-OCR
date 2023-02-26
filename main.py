@@ -93,6 +93,8 @@ def captureWidget():
             coordinate.append(root.winfo_rooty())
             coordinate.append(coordinate[0] + width)
             coordinate.append(coordinate[1]+height)
+            
+            self.coordinate = coordinate
 
             head = '캡쳐영역' + ' ' + str(width) + ' x ' + str(height) + ' ' + str(coordinate[0]) + ' x ' + str(coordinate[1])
             root.title(head)
