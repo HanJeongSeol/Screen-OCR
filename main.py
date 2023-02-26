@@ -58,7 +58,7 @@ class ThreadTask() :
 
         def run(self) :
             try :
-                self.__threadTask_.taskFunc()(self.__threadTask_.isRunning)
+                self.__threadTask_.taskFunc()()
             except Exception as e : print(repr(e))
             self.__threadTask_.stop()
 
@@ -71,11 +71,13 @@ def captureWidget():
             master.attributes('-topmost',1)
             master.bind("<Configure>", self.setSize)
 
-            self.startButton = Button(self.master, text ="캡쳐시작")
+            self.startButton = Button(self.master, text ="캡쳐시작", command=self.captureStart)
             self.startButton.pack(padx=5, pady=20)
             
             self.stopButton = Button(self.master, text ="정지")
             self.stopButton.pack(padx=5, pady=20)
+
+            self.captureTask = ThreadTask(self.capture)
 
         def setSize(self,event):
             time.sleep(0.001)
@@ -96,6 +98,26 @@ def captureWidget():
             root.title(head)
 
             time.sleep(0.01)
+
+        def capture(self) :
+            cap_coordinate = self.coordinate
+            root.attributes('-alpha',0.8)
+            root.geometry('100x100+100+100')
+            root.update()
+            global cnt
+            
+            while True :
+                cnt = cnt + 1
+                time.sleep(1)
+                img = ImageGrab.grab(cap_coordinate)
+                frame = np.array(img)
+                frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+                img_name = "image/talk%d_test.png" % cnt
+                cv2.imwrite(img_name,frame)
+
+        def captureStart(self) :
+            print("captureStart")
+            self.captureTask.start()
 
     root = Tk()
     captureWidget = CaptureGUI(root)
