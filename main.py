@@ -58,6 +58,7 @@ class ThreadTask() :
         def __init__(self, threadTask) :
             threading.Thread.__init__(self)
             self.__threadTask_ = threadTask
+            self.daemon = True
 
         def run(self) :
             try :
@@ -110,7 +111,9 @@ def captureWidget():
             root.geometry('100x300+100+100')
             root.update()
             global cnt
+            poro_ocr = PororoOcr()
             while True :
+                startTime = time.time()
                 try :
                     if not isRunningFunc() :
                         return
@@ -123,6 +126,10 @@ def captureWidget():
                 frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
                 img_name = "image/talk%d_test.png" % cnt
                 cv2.imwrite(img_name,frame)
+                text = poro_ocr.run_ocr(img_path=img_name)
+                print(text)
+                endTine = time.time()
+                print("소요시간 : " , endTine-startTime)
 
         def captureStart(self) :
             print("captureStart")
