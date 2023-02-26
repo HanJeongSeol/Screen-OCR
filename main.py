@@ -33,6 +33,35 @@ class PororoOcr:
 
         return ocr_text
 
+class ThreadTask() :
+    def __init__(self, taskFunc) :
+        self.__taskFunc_ = taskFunc
+        self.__workerThread_ = None
+        self.__isRunning_ = False
+
+    def taskFunc(self) :
+        return self.__taskFunc_
+
+    def isRunning(self) :
+        return self.__isRunning_ and self.__workerThread_.is_alive()
+    
+    def start(self) :
+        if not self.__isRunning_ :
+            self.__isRunning_ = True
+            self.__workerThread_ = self.WorkerThread(self)
+            self.__workerThread_.start()
+
+    class WorkerThread(threading.Thread) :
+        def __init__(self, threadTask) :
+            threading.Thread.__init__(self)
+            self.__threadTask_ = threadTask
+
+        def run(self) :
+            try :
+                self.__threadTask_.taskFunc()(self.__threadTask_.isRunning)
+            except Exception as e : print(repr(e))
+            self.__threadTask_.stop()
+
 def captureWidget():
     class CaptureGUI :
         def __init__(self,master) :
@@ -41,6 +70,12 @@ def captureWidget():
             master.attributes('-alpha',0.8)
             master.attributes('-topmost',1)
             master.bind("<Configure>", self.setSize)
+
+            self.startButton = Button(self.master, text ="캡쳐시작")
+            self.startButton.pack(padx=5, pady=20)
+            
+            self.stopButton = Button(self.master, text ="정지")
+            self.stopButton.pack(padx=5, pady=20)
 
         def setSize(self,event):
             time.sleep(0.001)
