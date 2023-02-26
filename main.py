@@ -50,6 +50,9 @@ class ThreadTask() :
             self.__isRunning_ = True
             self.__workerThread_ = self.WorkerThread(self)
             self.__workerThread_.start()
+            
+    def stop(self) :
+        self.__isRunning_ = False
 
     class WorkerThread(threading.Thread) :
         def __init__(self, threadTask) :
@@ -58,7 +61,7 @@ class ThreadTask() :
 
         def run(self) :
             try :
-                self.__threadTask_.taskFunc()()
+                self.__threadTask_.taskFunc()(self.__threadTask_.isRunning)
             except Exception as e : print(repr(e))
             self.__threadTask_.stop()
 
@@ -71,10 +74,10 @@ def captureWidget():
             master.attributes('-topmost',1)
             master.bind("<Configure>", self.setSize)
 
-            self.startButton = Button(self.master, text ="캡쳐시작", command=self.captureStart)
+            self.startButton = Button(self.master, text ="캡쳐시작", command=self.captureStart,anchor="center")
             self.startButton.pack(padx=5, pady=20)
             
-            self.stopButton = Button(self.master, text ="정지")
+            self.stopButton = Button(self.master, text ="정지", command=self.captureStop,anchor="center")
             self.stopButton.pack(padx=5, pady=20)
 
             self.captureTask = ThreadTask(self.capture)
@@ -101,14 +104,18 @@ def captureWidget():
 
             time.sleep(0.01)
 
-        def capture(self) :
+        def capture(self, isRunningFunc = None) :
             cap_coordinate = self.coordinate
             root.attributes('-alpha',0.8)
-            root.geometry('100x100+100+100')
+            root.geometry('100x300+100+100')
             root.update()
             global cnt
-            
             while True :
+                try :
+                    if not isRunningFunc() :
+                        return
+                except : pass
+                pass
                 cnt = cnt + 1
                 time.sleep(1)
                 img = ImageGrab.grab(cap_coordinate)
@@ -120,6 +127,13 @@ def captureWidget():
         def captureStart(self) :
             print("captureStart")
             self.captureTask.start()
+
+        def captureStop(self) :
+            print("captureStop")
+            root.geometry("430x420+800+400")
+            root.update()
+
+            self.captureTask.stop()
 
     root = Tk()
     captureWidget = CaptureGUI(root)
