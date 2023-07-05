@@ -79,7 +79,7 @@ class PororoFactoryBase(object):
         # Set default model
         if model is None:
             model = self.get_default_model(lang)
-
+    
         # yapf: disable
         assert (model in self._available_models[lang]), f"{model} is NOT supported for {lang}"
         # yapf: enable
