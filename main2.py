@@ -51,9 +51,10 @@ class MyClient:
 
     def disconnect(self):
         self.sio.disconnect()
-
+    
     def send_clientId(self,data) : 
         self.sio.emit('clientIp',data)
+        
 class PororoOcr:
     def __init__(self, model: str = "brainocr", lang: str = "ko", **kwargs):
         self.model = model
@@ -235,15 +236,13 @@ def extract_ip_from_uri(uri):
 
 async def main():
     # local 테스트
-    url = "https://43bf-106-241-78-77.ngrok-free.app"
-    public_ip = extract_ip_from_uri(url)
+    url = "http://example1.local:8080/"
+    public_ip = "127.0.0.1"
     # 실제 배포 시
     # public_ip = await get_public_ip()
     if public_ip is not None:
         print(f"IP 주소: {public_ip}")
         webbrowser.open(url)
         userCheck(public_ip)
-
 if __name__ == "__main__":
     asyncio.run(main())
-
