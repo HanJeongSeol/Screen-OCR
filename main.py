@@ -7,11 +7,9 @@ import cv2
 from PIL import ImageGrab
 import socketio
 import webbrowser
-import socket 
-import requests
 import asyncio
 import httpx
-import re
+
 
 global cnt
 cnt = 0
