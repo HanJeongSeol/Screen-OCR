@@ -4,12 +4,12 @@ from tkinter import *
 from pororo import Pororo
 import numpy as np
 import cv2
-from PIL import ImageGrab
+from PIL import ImageGrab, Image
 import socketio
-import webbrowser
 import asyncio
 import httpx
-
+import queue
+import pyautogui
 global cnt
 cnt = 0
 
@@ -108,14 +108,18 @@ class ThreadTask() :
             self.__threadTask_.stop()
 
 class CaptureGUI :
-    def __init__(self,master,my_client) :
+    def __init__(self,master,my_client=None) :
         self.master = master
-        self.my_client = my_client
-        master.geometry("430x420+800+400")
+        # self.my_client = my_client
+        master.geometry("481x1174+1067+53")
         master.attributes('-alpha',0.8)
         master.attributes('-topmost',1)
         master.bind("<Configure>", self.setSize)
+        self.width=None
+        self.height=None
         self.root = master
+        self.queue = queue.Queue()
+
         # self.user = user
         self.startButton = Button(self.master, text ="캡쳐시작", command=self.captureStart,anchor="center")
         self.startButton.pack(padx=5, pady=20)
@@ -124,6 +128,11 @@ class CaptureGUI :
         self.stopButton.pack(padx=5, pady=20)
 
         self.captureTask = ThreadTask(self.capture)
+
+    # def capture_specific_area(self):
+    #     x, y, width, height = self.get_window_geometry()
+    #     screenshot = pyautogui.screenshot(region=(x, y, width, height))
+    #     screenshot.save("screenshot.png")
 
     def setSize(self,event):
         time.sleep(0.001)
@@ -144,8 +153,13 @@ class CaptureGUI :
 
         head = '캡쳐영역' + ' ' + str(width) + ' x ' + str(height) + ' ' + str(coordinate[0]) + ' x ' + str(coordinate[1])
         self.root.title(head)
-
+        
         time.sleep(0.01)
+
+    def show_frame(self, frame):
+        if frame is not None:
+            cv2.imshow('cat on chair', frame)
+            cv2.waitKey(1)  # 1ms 기다리도록 수정하였습니다.
 
     def capture(self, isRunningFunc = None) :
         cap_coordinate = self.coordinate
@@ -161,31 +175,83 @@ class CaptureGUI :
             startTime = time.time()
             try :
                 if not isRunningFunc() :
-                    self.my_client.disconnect()
+                    # self.my_client.disconnect()
                     return
             except : pass
             pass
             cnt = cnt + 1
             time.sleep(1)
-            img = ImageGrab.grab(cap_coordinate)
-            frame = np.array(img)
-            frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
 
-            frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+            # img = ImageGrab.grab(cap_coordinate)
+            # frame = np.array(img)
+            # frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+            # img = cv2.imread("talk1.png")
+            # frame = self.highlight_specific_text_regions(img)
+            # Contrast enhancement using CLAHE (Contrast Limited Adaptive Histogram Equalization)
+            # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+            # enhanced = clahe.apply(gray)
+            
+            # blurred = cv2.GaussianBlur(gray, (1, 1), 0)
+
+            # Adaptive thresholding
+            # thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+            #                             cv2.THRESH_BINARY_INV, 11, 1)
+            
+            # Dilation with a finer kernel
+            # kernel = np.ones((1,1), np.uint8)
+
+            # erode = cv2.dilate(thresh, kernel , iterations=1)
+            # window = (self.width, self.height)
+            # print(window)
+            # img = img.resize(window, Image.Resampling.LANCZOS)
+            # frame = np.array(img)
+            # frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+            # frame = cv2.bilateralFilter(frame, 9, 50, 50)
+
+            # frame = cv2.GaussianBlur(frame, (5, 5), 0)
+            # kernel_sharpen_3 =np.array([[-1, -1, -1],
+            #                  [-1, 9, -1],
+            #                  [-1, -1, -1]])
+
+            # frame = cv2.filter2D(frame, -1, kernel_sharpen_3)
             # frame = cv2.resize(frame, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-            frame = cv2.adaptiveThreshold(frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                               cv2.THRESH_BINARY_INV, 13, 1)
-            kernel = np.ones((1,1), np.uint8)
-            frame = cv2.dilate(frame, kernel, iterations=2)
-            img_name = "image/talk%d_test.png" % cnt
-            cv2.imwrite(img_name,frame)
-            text = poro_ocr.run_ocr(img_path=img_name)
-            self.my_client.send_data(text)
-            endTine = time.time()
+            # thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+            #                    cv2.THRESH_BINARY_INV, 11, 1)
+            # kernel = np.ones((3,3), np.uint8)
+            # dilate = cv2.dilate(gray, kernel, iterations=1)
+
+
+            # img_name = "image/talk%d_test.png" % cnt
+
+            # cv2.imwrite(img_name,frame)
+            text = poro_ocr.run_ocr("final.png")
             print(text)
+            endTine = time.time()
+            # self.my_client.send_data(text)
+
             print("소요시간 : " , endTine-startTime)
 
+    def check_queue(self):
+        try:
+            frame = self.queue.get(0)
+            self.show_frame(frame)
+        except queue.Empty:
+            pass
+
+    def highlight_specific_text_regions(self,img):
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # # # Apply Gaussian blur to the image
+        blurred = cv2.GaussianBlur(img, (5,5), 0)
+        
+        # # # Enhance sharpness using Unsharp Masking
+        sharpened = cv2.addWeighted(img, 1.5, blurred, -0.5, 0)
+
+        return sharpened
+    
     def captureStart(self) :
+        # 캡쳐 시작 버튼을 누르는 시점의 width,heigt 저장
+        self.width = self.root.winfo_width()
+        self.height = self.root.winfo_height()
         print("captureStart")
         self.captureTask.start()
 
@@ -196,22 +262,45 @@ class CaptureGUI :
 
         self.captureTask.stop()
 
+    def preprocess_image_for_ocr(self,img: np.array) -> np.array:
+        """
+        Preprocessing for the input image for OCR with resizing and adaptive thresholding.
+        
+        Args:
+        - img (np.array): The input image.
+        
+        Returns:
+        - np.array: The preprocessed image.
+        """
 
-def captureWidget(socketio_obj):
+        # 1. Convert to Grayscale
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # 2. Resize the image to enhance resolution to a higher factor
+        resized = cv2.resize(gray, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
+
+        # 3. Adaptive Thresholding for binarization
+        binary = cv2.adaptiveThreshold(resized, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                    cv2.THRESH_BINARY_INV, 11, 2)
+        
+        return binary
+
+
+def captureWidget(my_client=None):                # my_client 인자 추가
     root = Tk()
-    capture_widget = CaptureGUI(root, socketio_obj)
+    capture_widget = CaptureGUI(root, my_client)  # my_client 전달
     root.mainloop()
 
 # 소켓과 일차적으로 유저 정보를 받아오는 통신을 진행. 유저 정보 및 플리 저장시킬 그룹 선택 값을 서버에서 받아온다.
-def userCheck(userIp) :
-            my_client = MyClient(userIp)
-            while True :
-                try :
-                    if my_client.playlistId != None :
-                        my_client.send_clientId(my_client.userIp)
-                        return captureWidget(my_client)
-                except : pass
-                pass
+def userCheck(userIp):
+    my_client = MyClient(userIp)
+    while True:
+        try:
+            if my_client.playlistId is not None:
+                my_client.send_clientId(my_client.userIp)
+                return captureWidget(my_client)    # my_client 전달
+        except:
+            pass
 # 공인 ip 가져오기
 async def get_public_ip():
     try:
@@ -240,14 +329,6 @@ def extract_ip_from_uri(uri):
     return ip
 
 async def main():
-    # local 테스트
-    url = "http://example1.local:8080/"
-    public_ip = "127.0.0.1"
-    # 실제 배포 시
-    # public_ip = await get_public_ip()
-    if public_ip is not None:
-        print(f"IP 주소: {public_ip}")
-        webbrowser.open(url)
-        userCheck(public_ip)
+    captureWidget()
 if __name__ == "__main__":
     asyncio.run(main())
