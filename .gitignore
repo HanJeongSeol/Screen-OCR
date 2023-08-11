@@ -4,6 +4,7 @@
 
 # image 폴더 제외
 /image
+/ing
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
