@@ -22,15 +22,17 @@ def init_weights(modules):
             m.weight.data.normal_(0, 0.01)
             m.bias.data.zero_()
 
-
+# torchvision 최신버전에 맞게 변경
 class Vgg16BN(torch.nn.Module):
 
-    def __init__(self, pretrained: bool = True, freeze: bool = True):
+    # def __init__(self, pretrained: bool = True, freeze: bool = True):
+    def __init__(self, weights: str = "IMAGENET1K_V1", freeze: bool = True):
         super(Vgg16BN, self).__init__()
-        model_urls["vgg16_bn"] = model_urls["vgg16_bn"].replace(
-            "https://", "http://")
-        vgg_pretrained_features = models.vgg16_bn(
-            pretrained=pretrained).features
+        if weights == "IMAGENET1K_V1":
+            vgg_pretrained_features = models.vgg16_bn(weights="IMAGENET1K_V1").features
+        else:
+            vgg_pretrained_features = models.vgg16_bn(weights=None).features
+
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
         self.slice3 = torch.nn.Sequential()
@@ -52,7 +54,12 @@ class Vgg16BN(torch.nn.Module):
             nn.Conv2d(1024, 1024, kernel_size=1),
         )
 
-        if not pretrained:
+        # if not pretrained:
+        #     init_weights(self.slice1.modules())
+        #     init_weights(self.slice2.modules())
+        #     init_weights(self.slice3.modules())
+        #     init_weights(self.slice4.modules())
+        if weights != "imagenet":
             init_weights(self.slice1.modules())
             init_weights(self.slice2.modules())
             init_weights(self.slice3.modules())
