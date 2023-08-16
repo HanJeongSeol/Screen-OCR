@@ -34,13 +34,13 @@ class TpsSpatialTransformerNetwork(nn.Module):
             batch_C_prime)  # batch_size x n (= I_r_width x I_r_height) x 2
         build_P_prime_reshape = build_P_prime.reshape(
             [build_P_prime.size(0), self.I_r_size[0], self.I_r_size[1], 2])
-
-        # if torch.__version__ > "1.2.0":
-        #     batch_I_r = F.grid_sample(batch_I, build_P_prime_reshape, padding_mode='border', align_corners=True)
-        # else:
-        batch_I_r = F.grid_sample(batch_I,
-                                  build_P_prime_reshape,
-                                  padding_mode="border")
+        # torchvision 최신 버전에서 align_corners=True로 인자 값 전달 필요
+        if torch.__version__ > "1.2.0":
+            batch_I_r = F.grid_sample(batch_I, build_P_prime_reshape, padding_mode='border', align_corners=True)
+        else:
+            batch_I_r = F.grid_sample(batch_I,
+                                    build_P_prime_reshape,
+                                    padding_mode="border")
 
         return batch_I_r
 

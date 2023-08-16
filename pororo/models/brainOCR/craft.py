@@ -32,11 +32,13 @@ class DoubleConv(nn.Module):
 
 class CRAFT(nn.Module):
 
-    def __init__(self, pretrained: bool = False, freeze: bool = False) -> None:
+    # def __init__(self, pretrained: bool = False, freeze: bool = False) -> None:
+    def __init__(self, weights: str = "IMAGENET1K_V1", freeze: bool = False) -> None:
         super(CRAFT, self).__init__()
-
         # Base network
-        self.basenet = Vgg16BN(pretrained, freeze)
+        # torchvision 최신버전에 맞게 변경 
+        # self.basenet = Vgg16BN(pretrained, freeze)
+        self.basenet = Vgg16BN(weights=weights, freeze=freeze)
 
         # U network
         self.upconv1 = DoubleConv(1024, 512, 256)
