@@ -4,4 +4,4 @@
 
 
 ## train
-- colab : ocr1, ocr2 check
+- colab : 2차수정 드라이브 확인_0822 -> window 운영체제 체크
